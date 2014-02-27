@@ -1,13 +1,14 @@
 
 gameend = 0
 class TicTacToe
-    attr_accessor :player, :gameend, :round, :gameboard
+    attr_accessor :player, :gameend, :round, :gameboard, :input
 
     def initialize
         @player = ""
         @gameend = 0
         @round = 1
         @gameboard = [[0, 0, 0],[0, 0, 0],[0, 0, 0]]
+        @input = ""
     end
 
     def gameBegin
@@ -50,17 +51,26 @@ class TicTacToe
         puts "|#{@gameboard[2][0]}|#{@gameboard[2][1]}|#{@gameboard[2][2]}|"
         puts "-------"
         puts ""
+        puts "Please enter you choice: "
+        @input = gets.chomp
+        puts "You have entered #{@input}."
+    end
+
+    def run
+        if (gameend == 0) then
+            turnInit(@gameboard, @round)
+        end
     end
 
 #TODO: WRITE AI METHOD TO BE CALLED IN WHILE LOOP
 
 end
 
-
-while(gameend == 0)
-
     game = TicTacToe.new
     game.gameBegin()
+    game.run
+        
+    
     gameend = 1
-end
+
 
