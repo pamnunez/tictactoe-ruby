@@ -125,6 +125,24 @@ class TicTacToe
     end
 
     def gameEndDisplay
+        if gameend == 1 && winner == "" then
+            puts "Thanks for playing!"
+        else
+            puts "Final board:"
+            puts ""
+            puts "#{@gameboard[0][0]}|#{@gameboard[0][1]}|#{@gameboard[0][2]}"
+            puts "-+-+-"
+            puts "#{@gameboard[1][0]}|#{@gameboard[1][1]}|#{@gameboard[1][2]}"
+            puts "-+-+-"
+            puts "#{@gameboard[2][0]}|#{@gameboard[2][1]}|#{@gameboard[2][2]}"
+            puts ""
+            if @winner == @player
+                puts "You're the winner! Congratulations!"
+            elsif @winner == @ai
+                puts "Sorry, I win! Better luck next time!"
+            end
+            puts "Thanks for playing!"
+        end
     end
 
 end
@@ -134,9 +152,6 @@ end
     while (game.gameend == 0)&&(game.input.downcase != "exit")
         game.run 
     end
-
-
-    puts "Thank you for playing!"
-#    gameend = 1
+    game.gameEndDisplay
 
 
