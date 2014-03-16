@@ -18,7 +18,7 @@ class TicTacToe
         puts "Please select your symbol. X goes first, O goes second. "
 
         @player = gets.chomp
-        while @player !~ /[XO]/
+        while @player !~ /[XO]/ do
             puts "Invalid input! Please enter X or O: "
             @player = gets.chomp
         end
@@ -31,9 +31,6 @@ class TicTacToe
             puts "You will play as O, you will play second."
         end
         puts ""
-    end
-
-    def turnInit(board, roundnum)
         puts "Enter your symbol by indicating the position"
         puts "you prefer with the following numbers:"
         puts ""
@@ -45,7 +42,10 @@ class TicTacToe
         puts ""
         puts "You may quit the game at any time by entering \"exit\"."
         puts ""
-        puts "Round #{roundnum}:"
+    end
+
+    def turnInit(sym)
+        puts "Round #{@round}: #{sym}"
         puts ""
         puts "#{@gameboard[0][0]}|#{@gameboard[0][1]}|#{@gameboard[0][2]}"
         puts "-+-+-"
@@ -53,6 +53,9 @@ class TicTacToe
         puts "-+-+-"
         puts "#{@gameboard[2][0]}|#{@gameboard[2][1]}|#{@gameboard[2][2]}"
         puts ""
+    end
+
+    def turnInput
         puts "Please enter you choice: "
  
         @input = gets.chomp
@@ -72,12 +75,29 @@ class TicTacToe
 
     def run 
         if (gameend == 0) then
-            @round+=1
-            turnInit(@gameboard, @round)
+         if @player == "X" then
+            turnInput
             userTurn
+            turnInit(@player)
             checkGameEnd(@player)
             aiTurn
+            turnInit(@ai)
             checkGameEnd(@ai)
+          elsif @player == "O" then
+            aiTurn
+            turnInit(@ai)
+            checkGameEnd(@ai)
+            turnInput
+            userTurn
+=begin 
+            while userTurn == false do
+                puts "That space is already filled!"
+                turnInput
+            end
+=end
+            turnInit(@player)
+            checkGameEnd(@player)
+          end
         elsif (gameend == 1)
             puts "Thank you for playing!"
             exit
@@ -86,6 +106,7 @@ class TicTacToe
 
 #TODO: WRITE AI FUNCTIONALITY. Once game mechanics are done, AI will be implemented.
     def userTurn
+        @round+=1
         x = 0
         y = 0
         if @input.to_i <= 2 then
@@ -97,31 +118,89 @@ class TicTacToe
             x = 2
             y = @input.to_i - 6
         end
-        @gameboard[x][y] = @player
+        
+        if @gameboard[x][y] != " " then 
+            puts "gameboard = #{@gameboard}"
+            return false
+        else 
+            @gameboard[x][y] = @player
+            puts "gameboard = #{@gameboard}"
+            return true
+        end
     end
 
-    def aiTurn
-
-    end
-
-    def checkGameEnd(symbol)
-        if @gameboard[0][0] == symbol && @gameboard[1][1] == symbol &&
-            @gameboard[2][2] == symbol then
-            @gameend = 1
-            @winner = symbol 
-        elsif @gameboard[0][2] == symbol && @gameboard[1][1] == symbol &&
-            @gameboard[2][0] == symbol then
-            @gameend = 1
-            @winner = symbol
-        else
-            @gameboard.each do |arr|
-                if arr[0] == symbol && arr[1] == symbol && arr[2] == symbol
-                    @gameend = 1
-                    @winner = symbol
-                end
+#the fill param allows me to choose whether I want to fill in a winning move or just check for one
+    def winningMove(rows, cols, diag, winner, loser, fill)
+        rows.each do |row|
+            if !row.include?(loser) && row.count(winner) == 2 then
+                row.fill(winner) if fill
+                return row
+            end
+        end
+        cols.each do |col|
+            if !col.include?(loser) && col.count(winner) == 2 then
+                (for i in 0..2 do col[i].replace(winner) end) if fill
+                return col
+            end
+        end
+        diag.each do |dia|
+            if !dia.include?(loser) && dia.count(winner) == 2 then
+                (for i in 0..2 do dia[i].replace(winner) end) if fill
+                return true
             end
         end
         false
+    end
+
+    def aiTurn
+        @round+=1
+        row1 = @gameboard[0]
+        row2 = @gameboard[1]
+        row3 = @gameboard[2]
+        col1 = []
+        col2 = []
+        col3 = []
+        col1 << @gameboard[0][0] << @gameboard[1][0] << @gameboard[2][0]
+        col2 << @gameboard[0][1] << @gameboard[1][1] << @gameboard[2][1]
+        col3 << @gameboard[0][2] << @gameboard[1][2] << @gameboard[2][2]
+        diag1 = []
+        diag2 = []
+        diag1 << @gameboard[0][0] << @gameboard[1][1] << @gameboard[2][2]
+        diag2 << @gameboard[0][2] << @gameboard[1][1] << @gameboard[2][0]
+        rows = [row1, row2, row3]
+        cols = [col1, col2, col3]
+        diag = [diag1, diag2]
+        winningMove(rows, cols, diag, @ai, @player, true)
+        if winningMove(rows, cols, diag, @player, @ai, false) != false then
+            puts "true"
+            block = winningMove(rows, cols, diag, @player, @ai, false)
+            block[block.find_index(" ")].replace(@ai)
+        end
+    end
+
+    def checkGameEnd(sym)
+        if @gameboard[0][0] == sym && @gameboard[1][1] == sym &&
+            @gameboard[2][2] == sym then
+            @gameend = 1
+            @winner = sym
+        elsif @gameboard[0][2] == sym && @gameboard[1][1] == sym &&
+            @gameboard[2][0] == sym then
+            @gameend = 1
+            @winner = sym
+        else
+            for i in 0..2
+                if @gameboard[i][0] == sym && @gameboard[i][1] == sym && 
+                    @gameboard[i][2] == sym then
+                    @gameend = 1
+                    @winner = sym
+                end
+                if @gameboard[0][i] == sym && @gameboard[1][i] == sym && 
+                    @gameboard[2][i] == sym then
+                    @gameend = 1
+                    @winner = sym
+                end
+            end
+        end
     end
 
     def gameEndDisplay
@@ -150,7 +229,11 @@ end
     game = TicTacToe.new
     game.gameBegin()
     while (game.gameend == 0)&&(game.input.downcase != "exit")
-        game.run 
+        #game.gameboard[0][0] = "O"
+        #game.gameboard[1][0] = "O"
+        game.gameboard[0][1] = "X"
+        game.gameboard[1][1] = "X"
+        game.run
     end
     game.gameEndDisplay
 
