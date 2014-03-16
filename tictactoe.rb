@@ -1,13 +1,14 @@
 
 
 class TicTacToe
-    attr_accessor :ai, :player, :gameend, :round, :gameboard, :input, :winner
+    attr_accessor :ai, :player, :gameend, :round, :total, :gameboard, :input, :winner
 
     def initialize
         @ai = ""
         @player = ""
         @gameend = 0
         @round = 0
+        @total = 0
         @gameboard = Array.new(3) { [" ", " ", " "] }
         @input = ""
         @winner = ""
@@ -41,6 +42,14 @@ class TicTacToe
         puts "6|7|8"
         puts ""
         puts "You may quit the game at any time by entering \"exit\"."
+        puts ""
+        puts "Round #{0}"
+        puts ""
+        puts "#{@gameboard[0][0]}|#{@gameboard[0][1]}|#{@gameboard[0][2]}"
+        puts "-+-+-"
+        puts "#{@gameboard[1][0]}|#{@gameboard[1][1]}|#{@gameboard[1][2]}"
+        puts "-+-+-"
+        puts "#{@gameboard[2][0]}|#{@gameboard[2][1]}|#{@gameboard[2][2]}"
         puts ""
     end
 
@@ -104,58 +113,31 @@ class TicTacToe
         end
     end
 
-#TODO: WRITE AI FUNCTIONALITY. Once game mechanics are done, AI will be implemented.
     def userTurn
         @round+=1
-        x = 0
-        y = 0
+        r = 0
+        c = 0
         if @input.to_i <= 2 then
-            y = @input.to_i
+            c = @input.to_i
         elsif @input.to_i > 2 && @input.to_i <= 5
-            x = 1
-            y = @input.to_i - 3
+            r = 1
+            c = @input.to_i - 3
         elsif @input.to_i > 5
-            x = 2
-            y = @input.to_i - 6
+            r = 2
+            c = @input.to_i - 6
         end
         
-        if @gameboard[x][y] != " " then 
-            puts "gameboard = #{@gameboard}"
+        if @gameboard[r][c] != " " then 
             return false
         else 
-            @gameboard[x][y] = @player
-            puts "gameboard = #{@gameboard}"
+            @gameboard[r][c] = @player
             return true
         end
     end
 
 #the fill param allows me to choose whether I want to fill in a winning move or just check for one
-    def winningMove(rows, cols, diag, winner, loser, fill)
-        rows.each do |row|
-            if !row.include?(loser) && row.count(winner) == 2 then
-                row.fill(winner) if fill
-                checkGameEnd(winner)
-                return row
-            end
-        end
-        cols.each do |col|
-            if !col.include?(loser) && col.count(winner) == 2 then
-                (for i in 0..2 do col[i].replace(winner) end) if fill
-                checkGameEnd(winner)
-                return col
-            end
-        end
-        diag.each do |dia|
-            if !dia.include?(loser) && dia.count(winner) == 2 then
-                (for i in 0..2 do dia[i].replace(winner) end) if fill
-                return dia
-            end
-        end
-        false
-    end
-
-    def aiTurn
-        @round+=1
+    def winningMove(winner, loser, fill)
+        @total = 0
         row1 = @gameboard[0]
         row2 = @gameboard[1]
         row3 = @gameboard[2]
@@ -172,13 +154,132 @@ class TicTacToe
         rows = [row1, row2, row3]
         cols = [col1, col2, col3]
         diag = [diag1, diag2]
-        winningMove(rows, cols, diag, @ai, @player, true)
-        puts "gameend = #{@gameend}"
-        if winningMove(rows, cols, diag, @player, @ai, false) != false && @gameend == 0 then
-            puts "true"
-            block = winningMove(rows, cols, diag, @player, @ai, false)
-            block[block.find_index(" ")].replace(@ai)
+        winning = []
+        rows.each do |row|
+            if !row.include?(loser) && row.count(winner) == 2 then
+                row.fill(winner) if fill
+                checkGameEnd(winner)
+                winning << row
+                @total+=1
+            end
         end
+        cols.each do |col|
+            if !col.include?(loser) && col.count(winner) == 2 then
+                (for i in 0..2 do col[i].replace(winner) end) if (fill && @total == 0)
+                checkGameEnd(winner)
+                winning << col
+                @total+=1
+            end
+        end
+        diag.each do |dia|
+            if !dia.include?(loser) && dia.count(winner) == 2 then
+                (for i in 0..2 do dia[i].replace(winner) end) if (fill && @total == 0)
+                winning << dia
+                @total+=1
+            end
+        end
+        if winning.count == 0
+            false
+        else
+            winning[0]
+        end
+    end
+
+    def fork(current, opponent, fill, block)
+        curcount = 0
+        oppcount = 0
+        @gameboard.each { |ary| curcount += ary.count(current) }
+        @gameboard.each { |ary| oppcount += ary.count(opponent) }
+        if winningMove(current, opponent, false) == false && curcount > 1 && curcount < 4 then
+            for r in 0..2
+                for c in 0..2
+                    if @gameboard[r][c] == " " then
+                        @gameboard[r][c] = current 
+                        winningMove(current, opponent, false)
+                        if @total > 1 then
+                            @gameboard[r][c] = " " if !fill
+                            if block then blockFork(r, c) end
+                            return true
+                        else
+                            @gameboard[r][c] = " "
+                            result = false
+                        end
+                    end
+                end
+            end
+        end
+        result
+    end
+
+    def blockFork(row, col)
+        @gameboard[row][col] = @ai
+    end
+
+    def oppositeCorner(current, opponent) 
+        cors = [@gameboard[0][0], @gameboard[2][2], @gameboard[0][2], @gameboard[2][0]]
+        if cors[0] == current && cors[1] == " " then
+            puts "hit case 1"
+            cors[1] = current
+            return true
+        elsif cors[2] == current && cors[3] == " " then
+            cors[3] = current
+            puts "hit case 2"
+            return true
+        elsif cors[3] == current && cors[2] == " " then
+            cors[2] = current
+            puts "hit case 3"
+            return true
+        elsif cors[1] == current && cors[0] == " " then
+            cors[0] = current
+            puts "hit case 4"
+            return true
+        elsif cors.include?(" ") then
+            cors.keep_if { |x| x == " " }
+            puts "cors = #{cors}"
+            puts "gameboard = #{@gameboard}"
+            cors[rand(cors.length)].replace(current)
+            puts "hit case 5"
+            return true
+        else
+            return false
+        end
+    end
+
+    def fillSide(current, opponent)
+        sides = [@gameboard[0][1], @gameboard[1][0], @gameboard[1][2], @gameboard[2][1]]
+        sides.keep_if { |x| x == " " }
+        sides[rand(sides.length)].replace(current) if !sides.empty?
+        return true
+    end
+    
+    def aiTurn
+        @round+=1
+        #Try to make a winning move
+        (if winningMove(@ai, @player, true) != false then return true end) unless @gameend == 1
+        
+        #Try to block a winning move
+        if winningMove(@player, @ai, false) != false && @gameend == 0 then
+            block = winningMove(@player, @ai, false)
+            block[block.find_index(" ")].replace(@ai)
+            return true
+        end
+        
+        #Try to make a fork
+        (if fork(@ai, @player, true, false) then return true end) unless @gameend == 1
+        
+        #Try to block a fork
+        (if fork(@player, @ai, true, true); then return true end) unless @gameend == 1
+        
+        #Try to fill the center
+        if @gameboard[1][1] == " " then @gameboard[1][1] = @ai; return true end
+
+        #Try to fill an opposite corner
+        #Try to fill a randomly selected empty corner if none are filled
+        if oppositeCorner(@ai, @player) then puts "oppcor = true"; return true end
+        
+        #Try to fill an empty side if no corners are available
+        fillSide(@ai, @player)
+
     end
 
     def checkGameEnd(sym)
@@ -204,10 +305,15 @@ class TicTacToe
                 end
             end
         end
+        if @gameend == 0 then
+            filled = true
+            @gameboard.each { |ary| if ary.include?(" ") then filled = false end }
+            if filled then @gameend = 1; @winner = "tie" end
+        end
     end
 
     def gameEndDisplay
-        if gameend == 1 && winner == "" then
+        if @gameend == 1 && @winner == "" then
             puts "Thanks for playing!"
         else
             puts "Final board:"
@@ -222,6 +328,8 @@ class TicTacToe
                 puts "You're the winner! Congratulations!"
             elsif @winner == @ai
                 puts "Sorry, I win! Better luck next time!"
+            elsif @winner == "tie"
+                puts "It's a tie!"
             end
             puts "Thanks for playing!"
         end
@@ -232,10 +340,10 @@ end
     game = TicTacToe.new
     game.gameBegin()
     while (game.gameend == 0)&&(game.input.downcase != "exit")
-        #game.gameboard[0][0] = "O"
-        #game.gameboard[1][0] = "O"
-        game.gameboard[0][1] = "X"
-        game.gameboard[1][1] = "X"
+        #game.gameboard[0][1] = "X"
+        #game.gameboard[2][2] = "X"
+        #game.gameboard[0][1] = "X"
+        #game.gameboard[1][1] = "X"
         game.run
     end
     game.gameEndDisplay
