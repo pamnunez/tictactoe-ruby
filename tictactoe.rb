@@ -134,12 +134,14 @@ class TicTacToe
         rows.each do |row|
             if !row.include?(loser) && row.count(winner) == 2 then
                 row.fill(winner) if fill
+                checkGameEnd(winner)
                 return row
             end
         end
         cols.each do |col|
             if !col.include?(loser) && col.count(winner) == 2 then
                 (for i in 0..2 do col[i].replace(winner) end) if fill
+                checkGameEnd(winner)
                 return col
             end
         end
@@ -171,7 +173,8 @@ class TicTacToe
         cols = [col1, col2, col3]
         diag = [diag1, diag2]
         winningMove(rows, cols, diag, @ai, @player, true)
-        if winningMove(rows, cols, diag, @player, @ai, false) != false then
+        puts "gameend = #{@gameend}"
+        if winningMove(rows, cols, diag, @player, @ai, false) != false && @gameend == 0 then
             puts "true"
             block = winningMove(rows, cols, diag, @player, @ai, false)
             block[block.find_index(" ")].replace(@ai)
