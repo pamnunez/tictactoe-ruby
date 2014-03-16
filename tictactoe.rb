@@ -1,5 +1,5 @@
 
-gameend = 0
+
 class TicTacToe
     attr_accessor :ai, :player, :gameend, :round, :gameboard, :input, :winner
 
@@ -146,7 +146,7 @@ class TicTacToe
         diag.each do |dia|
             if !dia.include?(loser) && dia.count(winner) == 2 then
                 (for i in 0..2 do dia[i].replace(winner) end) if fill
-                return true
+                return dia
             end
         end
         false
