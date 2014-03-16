@@ -83,12 +83,18 @@ class TicTacToe
     end
 
     def run 
-        if (gameend == 0) then
+        if (@gameend == 0) then
          if @player == "X" then
-            turnInput
-            userTurn
+            turnInput 
+            while userTurn(false) == false do
+                puts "That space is already filled!"
+                turnInput
+            end
+            userTurn(true)
             turnInit(@player)
             checkGameEnd(@player)
+            if @gameend == 1 then return true end
+            
             aiTurn
             turnInit(@ai)
             checkGameEnd(@ai)
@@ -96,25 +102,24 @@ class TicTacToe
             aiTurn
             turnInit(@ai)
             checkGameEnd(@ai)
-            turnInput
-            userTurn
-=begin 
-            while userTurn == false do
+            
+            if @gameend == 1 then return true end
+            turnInput 
+            while userTurn(false) == false do
                 puts "That space is already filled!"
                 turnInput
             end
-=end
+            userTurn(true)
             turnInit(@player)
             checkGameEnd(@player)
           end
-        elsif (gameend == 1)
+        elsif (@gameend == 1)
             puts "Thank you for playing!"
             exit
         end
     end
 
-    def userTurn
-        @round+=1
+    def userTurn(fill)
         r = 0
         c = 0
         if @input.to_i <= 2 then
@@ -130,7 +135,8 @@ class TicTacToe
         if @gameboard[r][c] != " " then 
             return false
         else 
-            @gameboard[r][c] = @player
+            @gameboard[r][c] = @player if fill
+            @round+=1 if fill
             return true
         end
     end
@@ -218,27 +224,20 @@ class TicTacToe
     def oppositeCorner(current, opponent) 
         cors = [@gameboard[0][0], @gameboard[2][2], @gameboard[0][2], @gameboard[2][0]]
         if cors[0] == current && cors[1] == " " then
-            puts "hit case 1"
             cors[1] = current
             return true
         elsif cors[2] == current && cors[3] == " " then
             cors[3] = current
-            puts "hit case 2"
             return true
         elsif cors[3] == current && cors[2] == " " then
             cors[2] = current
-            puts "hit case 3"
             return true
         elsif cors[1] == current && cors[0] == " " then
             cors[0] = current
-            puts "hit case 4"
             return true
         elsif cors.include?(" ") then
             cors.keep_if { |x| x == " " }
-            puts "cors = #{cors}"
-            puts "gameboard = #{@gameboard}"
             cors[rand(cors.length)].replace(current)
-            puts "hit case 5"
             return true
         else
             return false
@@ -253,33 +252,51 @@ class TicTacToe
     end
     
     def aiTurn
-        @round+=1
         #Try to make a winning move
-        (if winningMove(@ai, @player, true) != false then return true end) unless @gameend == 1
+        if winningMove(@ai, @player, true) != false && @gameend == 0 then 
+            @round+=1
+            return true
+        end
         
         #Try to block a winning move
         if winningMove(@player, @ai, false) != false && @gameend == 0 then
             block = winningMove(@player, @ai, false)
             block[block.find_index(" ")].replace(@ai)
+            @round+=1
             return true
         end
         
         #Try to make a fork
-        (if fork(@ai, @player, true, false) then return true end) unless @gameend == 1
+        if fork(@ai, @player, true, false) && @gameend == 0 then 
+            @round+=1
+            return true
+        end
         
         #Try to block a fork
-        (if fork(@player, @ai, true, true); then return true end) unless @gameend == 1
+        if fork(@player, @ai, true, true) && @gameend == 0 then 
+            @round+=1
+            return true
+        end
         
         #Try to fill the center
-        if @gameboard[1][1] == " " then @gameboard[1][1] = @ai; return true end
+        if @gameboard[1][1] == " " && @gameend == 0 then
+            @gameboard[1][1] = @ai
+            @round+=1
+            return true
+        end
 
         #Try to fill an opposite corner
         #Try to fill a randomly selected empty corner if none are filled
-        if oppositeCorner(@ai, @player) then puts "oppcor = true"; return true end
+        if oppositeCorner(@ai, @player) && @gameend == 0 then
+            @round+=1
+            return true
+        end
         
         #Try to fill an empty side if no corners are available
-        fillSide(@ai, @player)
-
+        if @gameend == 0 then
+            @round+=1
+            fillSide(@ai, @player)
+        end
     end
 
     def checkGameEnd(sym)
