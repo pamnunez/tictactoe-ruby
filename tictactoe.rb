@@ -76,6 +76,7 @@ class TicTacToe
         puts "Please enter you choice: "
  
         @input = gets.chomp
+        #Ensures vaild number input
         while @input.to_i < 0 || @input.to_i > 8 || @input =~ /\D|^$/
             if @input.downcase == "exit"
                 puts "Thanks for playing!"
@@ -93,6 +94,7 @@ class TicTacToe
     def userTurn(fill)
         r = 0
         c = 0
+        #Maps user input to appropriate array values
         if @input.to_i <= 2 then
             c = @input.to_i
         elsif @input.to_i > 2 && @input.to_i <= 5
@@ -104,6 +106,7 @@ class TicTacToe
         end
         
         if @gameboard[r][c] != " " then 
+            #Returns false if slot selected is not empty
             return false
         else 
             @gameboard[r][c] = @player if fill
@@ -115,7 +118,8 @@ class TicTacToe
     def run 
         if (@gameend == 0) then
          if @player == "X" then
-            turnInput 
+            turnInput
+            #Checks and waits for valid input
             while userTurn(false) == false do
                 puts "That space is already filled!"
                 turnInput
@@ -123,6 +127,7 @@ class TicTacToe
             userTurn(true)
             turnInit(@player)
             checkGameEnd(@player)
+            #Force end of game if win/tie has already occured
             if @gameend == 1 then return true end
             
             aiTurn
@@ -132,7 +137,7 @@ class TicTacToe
             aiTurn
             turnInit(@ai)
             checkGameEnd(@ai)
-            
+            #Force end of game if win/tie has already occured
             if @gameend == 1 then return true end
             turnInput 
             while userTurn(false) == false do
@@ -145,12 +150,13 @@ class TicTacToe
           end
         elsif (@gameend == 1)
             puts "Thank you for playing!"
+            #End program execution when game ends
             exit
         end
     end
 
-#Checks for a possible winning move, the fill param allows me to choose whether 
-#I want to fill in a winning move or just check for one
+    #Checks for a possible winning move, the fill param allows me to 
+    #choose whether I want to fill in a winning move or just check for one
     def winningMove(winner, loser, fill)
         @total = 0 #will store number of possible win locations
         row1 = @gameboard[0]
@@ -205,7 +211,7 @@ class TicTacToe
         end
     end
 
-#Check for or create forks, which are combinations where there are two possible wins
+    #Check for or create forks, which are combinations where there are two possible wins
     def fork(current, opponent, fill, block)
         curcount = 0
         oppcount = 0
@@ -233,8 +239,8 @@ class TicTacToe
         result
     end
 
+    #According to strategy, mark should go in opposite corner of opponent's
     def oppositeCorner(current, opponent)
-        #According to strategy, mark should go in opposite corner of opponent's
         cors = [@gameboard[0][0], @gameboard[2][2], @gameboard[0][2], @gameboard[2][0]]
         if cors[0] == current && cors[1] == " " then
             cors[1] = current
@@ -258,16 +264,16 @@ class TicTacToe
         end
     end
 
+    #Fill an empty side slot
     def fillSide(current, opponent)
-        #Fill an empty side slot
         sides = [@gameboard[0][1], @gameboard[1][0], @gameboard[1][2], @gameboard[2][1]]
         sides.keep_if { |x| x == " " }
         sides[rand(sides.length)].replace(current) if !sides.empty?
         return true
     end
     
+    #This method calls the various move methods in order of best strategy
     def aiTurn
-        #This method calls the various move methods in order of best strategy
         #Try to make a winning move
         if winningMove(@ai, @player, true) != false && @gameend == 0 then 
             @round+=1
@@ -315,8 +321,8 @@ class TicTacToe
         end
     end
 
+    #Checks if three in a row has been achieved
     def checkGameEnd(sym)
-        #Checks if three in a row has been achieved
         if @gameboard[0][0] == sym && @gameboard[1][1] == sym &&
             @gameboard[2][2] == sym then
             @gameend = 1
