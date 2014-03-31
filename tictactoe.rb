@@ -224,9 +224,19 @@ class TicTacToe
                         @gameboard[r][c] = current #temp. assign spot to check for fork
                         winningMove(current, opponent, false) #call to update total
                         if @total > 1 then
+							#This is a special case where the player can set up two forks, should block
+							#by filling a side in order to force the other player to play defensively
+							if @gameboard[1][1] == opponent && (((@gameboard[0][0] == current)\
+								&& (@gameboard[2][2] == current))||((@gameboard[0][2] == current)\
+								&& (@gameboard[2][0] == current))) then
+								@gameboard[r][c] = " "
+								fillSide(opponent, current)
+								return true		#return true if there was a fork to block
+							end
+							#Block fork if the special case is not triggered
                             @gameboard[r][c] = " " if !fill
                             @gameboard[r][c] = @ai if block
-                            return true
+                            return true			#return true if there was a fork to block
                         else
                             #if total <= 1, then no possible forks, so undo test value
                             @gameboard[r][c] = " "
@@ -238,6 +248,10 @@ class TicTacToe
         end
         result
     end
+
+	def doubleFork(current, opponent, fill, block)
+		
+	end
 
     #According to strategy, mark should go in opposite corner of opponent's
     def oppositeCorner(current, opponent)
