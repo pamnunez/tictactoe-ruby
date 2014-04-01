@@ -2,8 +2,7 @@
 ## Project: TicTacToe implementation
 ## Created by: Pamela Nunez
 ## Completed: March 16, 2014
-## Description: Text-based TicTacToe game with (almost) perfect AI.
-## AI wins in most cases, except when user plays first and chooses boxes 0 and 8.
+## Description: Text-based TicTacToe game with perfect AI.
 ###############################################################################
 
 class TicTacToe
