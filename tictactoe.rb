@@ -60,7 +60,7 @@ class TicTacToe
     end
 
 	#Display current board and round
-    def turnInit(sym)
+    def turnInit(symbol)
         puts "Round #{@round}: #{sym}"
         puts ""
         puts "#{@gameboard[0][0]}|#{@gameboard[0][1]}|#{@gameboard[0][2]}"
@@ -90,25 +90,27 @@ class TicTacToe
         puts ""
     end
 
+	#Fill is a boolean that allows you to choose whether to actually fill the square or
+	#simply check if the last user input is a playable space 
     def userTurn(fill)
-        r = 0
-        c = 0
+        row = 0
+        col = 0
         #Maps user input to appropriate array values
         if @input.to_i <= 2 then
-            c = @input.to_i
+            col = @input.to_i
         elsif @input.to_i > 2 && @input.to_i <= 5
-            r = 1
-            c = @input.to_i - 3
+            row = 1
+            col = @input.to_i - 3
         elsif @input.to_i > 5
-            r = 2
-            c = @input.to_i - 6
+            row = 2
+            col = @input.to_i - 6
         end
         
-        if @gameboard[r][c] != " " then 
+        if @gameboard[row][col] != " " then 
             #Returns false if slot selected is not empty
             return false
         else 
-            @gameboard[r][c] = @player if fill
+            @gameboard[row][col] = @player if fill
             @round+=1 if fill
             return true
         end
@@ -212,33 +214,33 @@ class TicTacToe
 
     #Check for or create forks, which are combinations where there are two possible wins
     def fork(current, opponent, fill, block)
-        curcount = 0
-        oppcount = 0
+        curcount = 0        #Total marks on board made by player
+        oppcount = 0        #Total marks on board made by ai
         @gameboard.each { |ary| curcount += ary.count(current) }
         @gameboard.each { |ary| oppcount += ary.count(opponent) }
         if winningMove(current, opponent, false) == false && curcount < 4 then
-            for r in 0..2
-                for c in 0..2
-                    if @gameboard[r][c] == " " then
-                        @gameboard[r][c] = current #temp. assign spot to check for fork
-                        winningMove(current, opponent, false) #call to update total
+            for row in 0..2
+                for col in 0..2
+                    if @gameboard[row][col] == " " then
+                        @gameboard[row][col] = current #temp. assign spot to check for fork
+                        winningMove(current, opponent, false) #call to update @total
                         if @total > 1 then
 							#This is a special case where the player can set up two forks, should block
 							#by filling a side in order to force the other player to play defensively
 							if @gameboard[1][1] == opponent && (((@gameboard[0][0] == current)\
 								&& (@gameboard[2][2] == current))||((@gameboard[0][2] == current)\
 								&& (@gameboard[2][0] == current))) then
-								@gameboard[r][c] = " "
+								@gameboard[row][col] = " "
 								fillSide(opponent, current)
 								return true		#return true if there was a fork to block
 							end
 							#Block fork if the special case is not triggered
-                            @gameboard[r][c] = " " if !fill
-                            @gameboard[r][c] = @ai if block
+                            @gameboard[row][col] = " " if !fill
+                            @gameboard[row][col] = @ai if block
                             return true			#return true if there was a fork to block
                         else
                             #if total <= 1, then no possible forks, so undo test value
-                            @gameboard[r][c] = " "
+                            @gameboard[row][col] = " "
                             result = false
                         end
                     end
@@ -254,23 +256,23 @@ class TicTacToe
 
     #According to strategy, mark should go in opposite corner of opponent's
     def oppositeCorner(current, opponent)
-        cors = [@gameboard[0][0], @gameboard[2][2], @gameboard[0][2], @gameboard[2][0]]
-        if cors[0] == current && cors[1] == " " then
-            cors[1] = current
+        corners = [@gameboard[0][0], @gameboard[2][2], @gameboard[0][2], @gameboard[2][0]]
+        if corners[0] == current && corners[1] == " " then
+            corners[1] = current
             return true
-        elsif cors[2] == current && cors[3] == " " then
-            cors[3] = current
+        elsif corners[2] == current && corners[3] == " " then
+            corners[3] = current
             return true
-        elsif cors[3] == current && cors[2] == " " then
-            cors[2] = current
+        elsif corners[3] == current && corners[2] == " " then
+            corners[2] = current
             return true
-        elsif cors[1] == current && cors[0] == " " then
-            cors[0] = current
+        elsif corners[1] == current && corners[0] == " " then
+            corners[0] = current
             return true
         #Fill an empty corner if opponent does not have any corner
-        elsif cors.include?(" ") then
-            cors.keep_if { |x| x == " " }
-            cors[rand(cors.length)].replace(current)
+        elsif corners.include?(" ") then
+            corners.keep_if { |x| x == " " }
+            corners[rand(corners.length)].replace(current)
             return true
         else
             return false
@@ -335,26 +337,26 @@ class TicTacToe
     end
 
     #Checks if three in a row has been achieved
-    def checkGameEnd(sym)
-        if @gameboard[0][0] == sym && @gameboard[1][1] == sym &&
-            @gameboard[2][2] == sym then
+    def checkGameEnd(symbol)
+        if @gameboard[0][0] == symbol && @gameboard[1][1] == symbol &&
+            @gameboard[2][2] == symbol then
             @gameend = 1
-            @winner = sym
-        elsif @gameboard[0][2] == sym && @gameboard[1][1] == sym &&
-            @gameboard[2][0] == sym then
+            @winner = symbol
+        elsif @gameboard[0][2] == symbol && @gameboard[1][1] == symbol &&
+            @gameboard[2][0] == symbol then
             @gameend = 1
-            @winner = sym
+            @winner = symbol
         else
             for i in 0..2
-                if @gameboard[i][0] == sym && @gameboard[i][1] == sym && 
-                    @gameboard[i][2] == sym then
+                if @gameboard[i][0] == symbol && @gameboard[i][1] == symbol && 
+                    @gameboard[i][2] == symbol then
                     @gameend = 1
-                    @winner = sym
+                    @winner = symbol
                 end
-                if @gameboard[0][i] == sym && @gameboard[1][i] == sym && 
-                    @gameboard[2][i] == sym then
+                if @gameboard[0][i] == symbol && @gameboard[1][i] == symbol && 
+                    @gameboard[2][i] == symbol then
                     @gameend = 1
-                    @winner = sym
+                    @winner = symbol
                 end
             end
         end
