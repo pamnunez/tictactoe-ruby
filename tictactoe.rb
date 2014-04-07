@@ -159,7 +159,7 @@ class TicTacToe
     #Checks for a possible winning move, the fill param allows me to 
     #choose whether I want to fill in a winning move or just check for one
     def winningMove(winner, loser, fill)
-        @total = 0 #will store number of possible win locations
+        @total = 0 	#will store number of possible win locations
         row1 = @gameboard[0]
         row2 = @gameboard[1]
         row3 = @gameboard[2]
