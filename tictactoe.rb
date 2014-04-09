@@ -11,15 +11,15 @@ class TicTacToe
     def initialize
         @ai = ""
         @player = ""
-        @gameend = 0	#Will be 1 when the game is over
-        @round = 0	
-        @total = 0		#Total possible wins for 1 player. Used to check for forks
+        @gameend = 0    #Will be 1 when the game is over
+        @round = 0  
+        @total = 0      #Total possible wins for 1 player. Used to check for forks
         @gameboard = Array.new(3) { [" ", " ", " "] } #Store grid marks
-        @input = ""		#Most recent user input
-        @winner = ""	#Stores the winner or "tie" if there is a tie
+        @input = ""     #Most recent user input
+        @winner = ""    #Stores the winner or "tie" if there is a tie
     end
 
-	#Initial game display
+    #Initial game display
     def gameBegin 
         puts "Welcome to TicTacRuby!"
         puts "Please select your symbol. X goes first, O goes second. "
@@ -59,7 +59,7 @@ class TicTacToe
         puts ""
     end
 
-	#Display current board and round
+    #Display current board and round
     def turnInit(symbol)
         puts "Round #{@round}: #{symbol}"
         puts ""
@@ -90,8 +90,8 @@ class TicTacToe
         puts ""
     end
 
-	#Fill is a boolean that allows you to choose whether to actually fill the square or
-	#simply check if the last user input is a playable space 
+    #Fill is a boolean that allows you to choose whether to actually fill the square or
+    #simply check if the last user input is a playable space 
     def userTurn(fill)
         row = 0
         col = 0
@@ -159,7 +159,7 @@ class TicTacToe
     #Checks for a possible winning move, the fill param allows me to 
     #choose whether I want to fill in a winning move or just check for one
     def winningMove(winner, loser, fill)
-        @total = 0 #will store number of possible win locations
+        @total = 0 	#will store number of possible win locations
         row1 = @gameboard[0]
         row2 = @gameboard[1]
         row3 = @gameboard[2]
@@ -225,19 +225,10 @@ class TicTacToe
                         @gameboard[row][col] = current #temp. assign spot to check for fork
                         winningMove(current, opponent, false) #call to update @total
                         if @total > 1 then
-							#This is a special case where the player can set up two forks, should block
-							#by filling a side in order to force the other player to play defensively
-							if @gameboard[1][1] == opponent && (((@gameboard[0][0] == current)\
-								&& (@gameboard[2][2] == current))||((@gameboard[0][2] == current)\
-								&& (@gameboard[2][0] == current))) then
-								@gameboard[row][col] = " "
-								fillSide(opponent, current)
-								return true		#return true if there was a fork to block
-							end
-							#Block fork if the special case is not triggered
+                            #Block fork
                             @gameboard[row][col] = " " if !fill
                             @gameboard[row][col] = @ai if block
-                            return true			#return true if there was a fork to block
+                            return true         #return true if there was a fork to block
                         else
                             #if total <= 1, then no possible forks, so undo test value
                             @gameboard[row][col] = " "
@@ -250,9 +241,18 @@ class TicTacToe
         result
     end
 
-	def doubleFork(current, opponent, fill, block)
-		
-	end
+    def doubleFork(current, opponent, fill)
+        #This is a special case where the player can set up two forks, should block
+        #by filling a side in order to force the other player to play defensively
+        if @gameboard[1][1] == current && (((@gameboard[0][0] == opponent)\
+            && (@gameboard[2][2] == opponent))||((@gameboard[0][2] == opponent)\
+            && (@gameboard[2][0] == opponent))) then
+            fillSide(current, opponent) if fill
+            return true                 #return true if there was a fork to block
+        else
+            return false
+        end
+    end
 
     #According to strategy, mark should go in opposite corner of opponent's
     def oppositeCorner(current, opponent)
@@ -302,7 +302,13 @@ class TicTacToe
             @round+=1
             return true
         end
-        
+       
+        #Check for special fork case
+        if doubleFork(@ai, @player, true) && @gameend == 0 then
+            @round+=1
+            return true
+        end
+ 
         #Try to make a fork
         if fork(@ai, @player, true, false) && @gameend == 0 then 
             @round+=1
