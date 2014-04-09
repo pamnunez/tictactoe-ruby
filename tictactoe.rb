@@ -61,7 +61,7 @@ class TicTacToe
 
 	#Display current board and round
     def turnInit(symbol)
-        puts "Round #{@round}: #{sym}"
+        puts "Round #{@round}: #{symbol}"
         puts ""
         puts "#{@gameboard[0][0]}|#{@gameboard[0][1]}|#{@gameboard[0][2]}"
         puts "-+-+-"
@@ -392,14 +392,6 @@ class TicTacToe
         end
     end
 
-end
-
-    game = TicTacToe.new    #Create instance of TicTacToe game
-    game.gameBegin()        #Display initial message
-    while (game.gameend == 0)&&(game.input.downcase != "exit")
-        #Run game until gameend flag is triggered
-        game.run
-    end
-    game.gameEndDisplay     #Display final message
+end #class TicTacToe
 
 
